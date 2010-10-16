@@ -134,6 +134,10 @@ public class ChaosWheel extends JComponent implements MouseListener {
      */
     public final void paintComponent(final Graphics g) {
         super.paintComponent(g);
+        if (graphMode) {
+            paintGraph(g);
+            return;
+        }
 
         /* Draw the buckets. */
         double diff = Math.PI * 2d / buckets.size();
@@ -312,6 +316,9 @@ public class ChaosWheel extends JComponent implements MouseListener {
         switch (e.getButton()) {
         case MouseEvent.BUTTON1:
             addBucket();
+            break;
+        case MouseEvent.BUTTON2:
+            graphMode ^= true;
             break;
         case MouseEvent.BUTTON3:
             removeBucket();
