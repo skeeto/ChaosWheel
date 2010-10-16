@@ -312,7 +312,6 @@ public class ChaosWheel extends JComponent implements MouseListener {
 
     /** {@inheritDoc} */
     public final void mouseReleased(final MouseEvent e) {
-        System.out.println("click!");
         switch (e.getButton()) {
         case MouseEvent.BUTTON1:
             addBucket();
