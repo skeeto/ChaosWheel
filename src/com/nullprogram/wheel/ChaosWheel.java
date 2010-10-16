@@ -36,6 +36,7 @@ public class ChaosWheel extends JComponent implements Runnable {
     private double thetadot;            // radians / sec
     private int numBuckets;
     private double[] buckets;           // slug
+    private volatile boolean running;
 
     /**
      * Create a water wheel with the default number of buckets.
@@ -56,7 +57,7 @@ public class ChaosWheel extends JComponent implements Runnable {
         numBuckets = num;
         buckets = new double[numBuckets];
         setPreferredSize(new Dimension(SIZE, SIZE));
-        (new Thread(this)).start();
+        running = false;
     }
 
     /**
@@ -66,10 +67,12 @@ public class ChaosWheel extends JComponent implements Runnable {
      */
     public static void main(final String[] args) {
         JFrame frame = new JFrame("Lorenz Water Wheel");
-        frame.add(new ChaosWheel(DEFAULT_BUCKETS));
+        ChaosWheel wheel = new ChaosWheel();
+        frame.add(wheel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+        wheel.start();
     }
 
     /**
@@ -103,11 +106,21 @@ public class ChaosWheel extends JComponent implements Runnable {
     }
 
     /**
+     * Start running the wheel simulation.
+     */
+    public final void start() {
+        if (!running) {
+            running = true;
+            (new Thread(this)).start();
+        }
+    }
+
+    /**
      * Drive the simulation forward. This should be run as a thread.
      */
     public final void run() {
         long tm = System.currentTimeMillis();
-        while (true) {
+        while (running) {
             try {
                 tm += DELAY;
                 Thread.sleep(Math.max(0, tm - System.currentTimeMillis()));
@@ -117,6 +130,13 @@ public class ChaosWheel extends JComponent implements Runnable {
             updateState(DELAY / 1000.0);
             repaint();
         }
+    }
+
+    /**
+     * Tell the wheel to stop running.
+     */
+    public final void stop() {
+        running = false;
     }
 
     /**
