@@ -65,6 +65,13 @@ public class ChaosWheel extends JComponent implements MouseListener {
         }
         setPreferredSize(new Dimension(SIZE, SIZE));
         addMouseListener(this);
+        ActionListener listener = new ActionListener() {
+            public void actionPerformed(final ActionEvent evt) {
+                updateState(DELAY / 1000.0);
+                repaint();
+            }
+        };
+        timer = new Timer(DELAY, listener);
     }
 
     /**
@@ -132,13 +139,6 @@ public class ChaosWheel extends JComponent implements MouseListener {
      * Start running the wheel simulation.
      */
     public final void start() {
-        ActionListener listener = new ActionListener() {
-            public void actionPerformed(final ActionEvent evt) {
-                updateState(DELAY / 1000.0);
-                repaint();
-            }
-        };
-        timer = new Timer(DELAY, listener);
         timer.start();
     }
 
