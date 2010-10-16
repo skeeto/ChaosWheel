@@ -23,7 +23,7 @@ public class ChaosWheel extends JComponent {
     private static final int SIZE = 300; // display size in pixels
     private static final int DELAY = 30; // milliseconds
     private static final int DEFAULT_BUCKETS = 9;
-    private static final int BUCKET_SIZE_RATIO = 8;
+    private static final int MIN_BUCKETS = 5;
 
     /* Simulation parameters. */
     private double radius = 1;          // feet
@@ -69,7 +69,23 @@ public class ChaosWheel extends JComponent {
      */
     public static void main(final String[] args) {
         JFrame frame = new JFrame("Lorenz Water Wheel");
-        ChaosWheel wheel = new ChaosWheel();
+        ChaosWheel wheel = null;
+        if (args.length == 0) {
+            wheel = new ChaosWheel();
+        } else {
+            int num = 0;
+            try {
+                num = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                System.out.println("Argument must be an integer.");
+                System.exit(1);
+            }
+            if (num < MIN_BUCKETS) {
+                System.out.println("Minimum # of buckets: " + MIN_BUCKETS);
+                System.exit(1);
+            }
+            wheel = new ChaosWheel(num);
+        }
         frame.add(wheel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
