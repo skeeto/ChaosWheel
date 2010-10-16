@@ -1,5 +1,6 @@
 package com.nullprogram.wheel;
 
+import java.util.Vector;
 import java.util.Random;
 
 import java.awt.Color;
@@ -7,6 +8,8 @@ import java.awt.Graphics;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseEvent;
 
 import javax.swing.Timer;
 import javax.swing.JFrame;
@@ -15,7 +18,7 @@ import javax.swing.JComponent;
 /**
  * Simulates and displays a chaotic water wheel.
  */
-public class ChaosWheel extends JComponent {
+public class ChaosWheel extends JComponent implements MouseListener {
 
     private static final long serialVersionUID = 4764158473501226728L;
 
@@ -37,8 +40,7 @@ public class ChaosWheel extends JComponent {
     /* Current state of the wheel. */
     private double theta;               // radians
     private double thetadot;            // radians / sec
-    private int numBuckets;
-    private double[] buckets;           // slug
+    private Vector<Double> buckets;  // slug
     private Timer timer;
 
     /**
@@ -51,15 +53,18 @@ public class ChaosWheel extends JComponent {
     /**
      * Create a water wheel with a specific number of buckets.
      *
-     * @param num number of buckets.
+     * @param numBuckets number of buckets.
      */
-    public ChaosWheel(final int num) {
+    public ChaosWheel(final int numBuckets) {
         Random rng = new Random();
         theta = rng.nextDouble() * 2d * Math.PI;
         thetadot = (rng.nextDouble() - 0.5);
-        numBuckets = num;
-        buckets = new double[numBuckets];
+        buckets = new Vector<Double>();
+        for (int i = 0; i < numBuckets; i++) {
+            buckets.add(0d);
+        }
         setPreferredSize(new Dimension(SIZE, SIZE));
+        addMouseListener(this);
     }
 
     /**
@@ -102,13 +107,13 @@ public class ChaosWheel extends JComponent {
         super.paintComponent(g);
 
         /* Draw the buckets. */
-        double diff = Math.PI * 2d / numBuckets;
+        double diff = Math.PI * 2d / buckets.size();
         int size = Math.min(getWidth(), getHeight());
-        int bucketSize = size / (int) (numBuckets / 1.25);
+        int bucketSize = size / (int) (buckets.size() / 1.25);
         int drawRadius = size / 2 - bucketSize;
         int centerx = size / 2;
         int centery = size / 2;
-        for (int i = 0; i < numBuckets; i++) {
+        for (int i = 0; i < buckets.size(); i++) {
             double angle = i * diff + theta - Math.PI / 2;
             int x = centerx + (int) (Math.cos(angle) * drawRadius);
             int y = centery + (int) (Math.sin(angle) * drawRadius);
@@ -116,7 +121,7 @@ public class ChaosWheel extends JComponent {
             g.drawRect(x - bucketSize / 2, y - bucketSize / 2,
                        bucketSize, bucketSize);
             g.setColor(Color.blue);
-            int height = (int) (bucketSize * buckets[i] / bucketFull);
+            int height = (int) (bucketSize * buckets.get(i) / bucketFull);
             g.fillRect(x - bucketSize / 2,
                        y - bucketSize / 2 + (bucketSize - height),
                        bucketSize, height);
@@ -161,25 +166,28 @@ public class ChaosWheel extends JComponent {
 
         /* Calculate inertia */
         double inertia = wheelIntertia;
-        for (int i = 0; i < numBuckets; i++) {
-            inertia += buckets[i] * radius * radius;
+        for (int i = 0; i < buckets.size(); i++) {
+            inertia += buckets.get(i) * radius * radius;
         }
 
         /* Calculate torque */
         double torque = -1 * (damping * thetadot);
-        double diff = Math.PI * 2d / numBuckets;
-        for (int i = 0; i < numBuckets; i++) {
-            torque += buckets[i] * radius * gravity
+        double diff = Math.PI * 2d / buckets.size();
+        for (int i = 0; i < buckets.size(); i++) {
+            torque += buckets.get(i) * radius * gravity
                       * Math.sin(theta + diff * i);
         }
         thetadot += torque / inertia * tdot;
 
         /* Update buckets */
-        for (int i = 0; i < numBuckets; i++) {
-            buckets[i] += buckets[i] * -drainRate * tdot
-                          + tdot * inflow(theta + diff * i);
-            buckets[i] = Math.max(0, buckets[i]);
-            buckets[i] = Math.min(bucketFull, buckets[i]);
+        for (int i = 0; i < buckets.size(); i++) {
+            double oldVal = buckets.get(i);
+            double newVal = oldVal;
+            newVal += buckets.get(i) * -drainRate * tdot
+                      + tdot * inflow(theta + diff * i);
+            newVal = Math.max(0, newVal);
+            newVal = Math.min(bucketFull, newVal);
+            buckets.set(i, newVal);
         }
     }
 
@@ -190,12 +198,64 @@ public class ChaosWheel extends JComponent {
      * @return fill rate of the bucket (slugs / sec)
      */
     private double inflow(final double angle) {
-        if (Math.cos(angle) > Math.abs(Math.cos(Math.PI * 2d / numBuckets))) {
+        if (Math.cos(angle) > Math.abs(Math.cos(Math.PI * 2d / buckets.size()))) {
             return fillRate / 2d
-                   * (Math.cos(numBuckets
+                   * (Math.cos(buckets.size()
                                * Math.atan2(Math.tan(angle), 1) / 2d) + 1);
         } else {
             return 0;
         }
+    }
+
+    /**
+     * Add one bucket to the display.
+     */
+    private final void addBucket() {
+        buckets.add(0d);
+    }
+
+    /**
+     * Remove one bucket from the display.
+     */
+    private final void removeBucket() {
+        if (buckets.size() > MIN_BUCKETS) {
+            buckets.remove(0);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public final void mouseReleased(final MouseEvent e) {
+        System.out.println("click!");
+        switch (e.getButton()) {
+        case MouseEvent.BUTTON1:
+            addBucket();
+            break;
+        case MouseEvent.BUTTON3:
+            removeBucket();
+            break;
+        default:
+            /* do nothing */
+            break;
+        }
+    }
+
+    /** {@inheritDoc} */
+    public void mouseExited(final MouseEvent e) {
+        /* Do nothing */
+    }
+
+    /** {@inheritDoc} */
+    public void mouseEntered(final MouseEvent e) {
+        /* Do nothing */
+    }
+
+    /** {@inheritDoc} */
+    public void mouseClicked(final MouseEvent e) {
+        /* Do nothing */
+    }
+
+    /** {@inheritDoc} */
+    public void mousePressed(final MouseEvent e) {
+        /* Do nothing */
     }
 }
