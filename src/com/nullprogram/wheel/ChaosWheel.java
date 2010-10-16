@@ -138,7 +138,6 @@ public class ChaosWheel extends JComponent implements MouseListener {
                 repaint();
             }
         };
-        System.out.println("Starting timer.");
         timer = new Timer(DELAY, listener);
         timer.start();
     }
