@@ -17,6 +17,13 @@ import javax.swing.JComponent;
 
 /**
  * Simulates and displays a chaotic water wheel.
+ *
+ * Left-clicking adds a bucket and right-clicking removes a
+ * bucket. The simulation discrete steps are uniform, making this a
+ * bit rudimentary.
+ *
+ * This code is based on a Matlab program written by my friend Michael
+ * Abraham.
  */
 public class ChaosWheel extends JComponent implements MouseListener {
 
