@@ -88,7 +88,7 @@ public class ChaosWheel extends JComponent {
         /* Draw the buckets. */
         double diff = Math.PI * 2d / numBuckets;
         int size = Math.min(getWidth(), getHeight());
-        int bucketSize = size / BUCKET_SIZE_RATIO;
+        int bucketSize = size / (int) (numBuckets / 1.25);
         int drawRadius = size / 2 - bucketSize;
         int centerx = size / 2;
         int centery = size / 2;
