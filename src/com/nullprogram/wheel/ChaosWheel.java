@@ -18,7 +18,7 @@ public class ChaosWheel extends JComponent implements Runnable {
 
     /* Simulation constants. */
     private static final int SIZE = 300;
-    private static final int DELAY = 50; // milliseconds
+    private static final int DELAY = 30; // milliseconds
     private static final int DEFAULT_BUCKETS = 9;
     private static final int BUCKET_SIZE_RATIO = 8;
 
