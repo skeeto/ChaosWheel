@@ -20,7 +20,7 @@ public class ChaosWheel extends JComponent {
     private static final long serialVersionUID = 4764158473501226728L;
 
     /* Simulation constants. */
-    private static final int SIZE = 300;
+    private static final int SIZE = 300; // display size in pixels
     private static final int DELAY = 30; // milliseconds
     private static final int DEFAULT_BUCKETS = 9;
     private static final int BUCKET_SIZE_RATIO = 8;
