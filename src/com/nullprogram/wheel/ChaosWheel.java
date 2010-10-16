@@ -1,6 +1,8 @@
 package com.nullprogram.wheel;
 
 import java.util.Vector;
+import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.Random;
 
 import java.awt.Color;
@@ -49,6 +51,16 @@ public class ChaosWheel extends JComponent implements MouseListener {
     private double thetadot;            // radians / sec
     private Vector<Double> buckets;     // slug
     private Timer timer;
+    private boolean graphMode;
+
+    /* Histotic state information. */
+    private static final int MAX_HISTORY = 1000;
+    private ArrayDeque<Double> rlRatio;      // left/right water ratio
+    private ArrayDeque<Double> tbRatio;      // top/bottom water ratio
+    private double rlRatioMax = 0;
+    private double rlRatioMin = 0;
+    private double tbRatioMax = 0;
+    private double tbRatioMin = 0;
 
     /**
      * Create a water wheel with the default number of buckets.
@@ -70,6 +82,8 @@ public class ChaosWheel extends JComponent implements MouseListener {
         for (int i = 0; i < numBuckets; i++) {
             buckets.add(0d);
         }
+        rlRatio = new ArrayDeque<Double>();
+        tbRatio = new ArrayDeque<Double>();
         setPreferredSize(new Dimension(SIZE, SIZE));
         addMouseListener(this);
         ActionListener listener = new ActionListener() {
@@ -78,6 +92,7 @@ public class ChaosWheel extends JComponent implements MouseListener {
                 repaint();
             }
         };
+        graphMode = false;
         timer = new Timer(DELAY, listener);
     }
 
@@ -143,6 +158,31 @@ public class ChaosWheel extends JComponent implements MouseListener {
     }
 
     /**
+     * Paint a graph of historical data.
+     */
+    private void paintGraph(Graphics g) {
+        if (rlRatio.size() < 2) {
+            return;
+        }
+        g.setColor(Color.black);
+        Iterator<Double> rlit = rlRatio.iterator();
+        Iterator<Double> tbit = tbRatio.iterator();
+        Double rlLast = rlit.next();
+        Double tbLast = tbit.next();
+        while (rlit.hasNext()) {
+            Double rl = rlit.next();
+            Double tb = tbit.next();
+            int x0 = (int) (rlLast / (rlRatioMax - rlRatioMin) * getWidth());
+            int y0 = (int) (tbLast / (tbRatioMax - tbRatioMin) * getHeight());
+            int x1 = (int) (rl / (rlRatioMax - rlRatioMin) * getWidth());
+            int y1 = (int) (tb / (tbRatioMax - tbRatioMin) * getHeight());
+            g.drawLine(x0, y0, x1, y1);
+            rlLast = rl;
+            tbLast = tb;
+        }
+    }
+
+    /**
      * Start running the wheel simulation.
      */
     public final void start() {
@@ -194,6 +234,42 @@ public class ChaosWheel extends JComponent implements MouseListener {
             newVal = Math.max(0, newVal);
             newVal = Math.min(bucketFull, newVal);
             buckets.set(i, newVal);
+        }
+
+        logState();
+    }
+
+    /**
+     * Append some info about the current wheel state to the log.
+     */
+    private final void logState() {
+        double left = 0;
+        double right = 0;
+        double top = 0;
+        double bottom = 0;
+        double diff = Math.PI * 2d / buckets.size();
+        for (int i = 0; i < buckets.size(); i++) {
+            double angle = theta + diff * i;
+            if (Math.cos(angle) > 0) {
+                right += buckets.get(i);
+            }
+            left += buckets.get(i);
+            if (Math.sin(angle) > 0) {
+                top += buckets.get(i);
+            }
+            bottom += buckets.get(i);
+        }
+        double rl = left/right;
+        double tb = top/bottom;
+        rlRatioMax = Math.max(rl, rlRatioMax);
+        tbRatioMax = Math.max(tb, tbRatioMax);
+        rlRatioMin = Math.min(rl, rlRatioMin);
+        tbRatioMin = Math.min(tb, tbRatioMin);
+        rlRatio.add(rl);
+        tbRatio.add(tb);
+        if (rlRatio.size() > MAX_HISTORY) {
+            rl = rlRatio.remove();
+            tb = tbRatio.remove();
         }
     }
 
