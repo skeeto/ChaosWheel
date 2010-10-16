@@ -163,8 +163,10 @@ public class ChaosWheel extends JComponent implements MouseListener {
 
     /**
      * Paint a graph of historical data.
+     *
+     * @param g graphics to be painted
      */
-    private void paintGraph(Graphics g) {
+    private void paintGraph(final Graphics g) {
         if (rlRatio.size() < 2) {
             return;
         }
@@ -246,7 +248,7 @@ public class ChaosWheel extends JComponent implements MouseListener {
     /**
      * Append some info about the current wheel state to the log.
      */
-    private final void logState() {
+    private void logState() {
         double left = 0;
         double right = 0;
         double top = 0;
@@ -263,8 +265,8 @@ public class ChaosWheel extends JComponent implements MouseListener {
             }
             bottom += buckets.get(i);
         }
-        double rl = left/right;
-        double tb = top/bottom;
+        double rl = left / right;
+        double tb = top / bottom;
         rlRatioMax = Math.max(rl, rlRatioMax);
         tbRatioMax = Math.max(tb, tbRatioMax);
         rlRatioMin = Math.min(rl, rlRatioMin);
