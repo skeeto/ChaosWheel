@@ -40,7 +40,7 @@ public class ChaosWheel extends JComponent implements MouseListener {
     /* Current state of the wheel. */
     private double theta;               // radians
     private double thetadot;            // radians / sec
-    private Vector<Double> buckets;  // slug
+    private Vector<Double> buckets;     // slug
     private Timer timer;
 
     /**
@@ -197,7 +197,8 @@ public class ChaosWheel extends JComponent implements MouseListener {
      * @return fill rate of the bucket (slugs / sec)
      */
     private double inflow(final double angle) {
-        if (Math.cos(angle) > Math.abs(Math.cos(Math.PI * 2d / buckets.size()))) {
+        double lim = Math.abs(Math.cos(Math.PI * 2d / buckets.size()));
+        if (Math.cos(angle) > lim) {
             return fillRate / 2d
                    * (Math.cos(buckets.size()
                                * Math.atan2(Math.tan(angle), 1) / 2d) + 1);
@@ -209,14 +210,14 @@ public class ChaosWheel extends JComponent implements MouseListener {
     /**
      * Add one bucket to the display.
      */
-    private final void addBucket() {
+    private void addBucket() {
         buckets.add(0d);
     }
 
     /**
      * Remove one bucket from the display.
      */
-    private final void removeBucket() {
+    private void removeBucket() {
         if (buckets.size() > MIN_BUCKETS) {
             buckets.remove(0);
         }
