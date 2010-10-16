@@ -5,14 +5,17 @@ import java.util.Random;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.Timer;
 import javax.swing.JFrame;
 import javax.swing.JComponent;
 
 /**
  * Simulates and displays a chaotic water wheel.
  */
-public class ChaosWheel extends JComponent implements Runnable {
+public class ChaosWheel extends JComponent {
 
     private static final long serialVersionUID = 4764158473501226728L;
 
@@ -36,7 +39,7 @@ public class ChaosWheel extends JComponent implements Runnable {
     private double thetadot;            // radians / sec
     private int numBuckets;
     private double[] buckets;           // slug
-    private volatile boolean running;
+    private Timer timer;
 
     /**
      * Create a water wheel with the default number of buckets.
@@ -57,7 +60,6 @@ public class ChaosWheel extends JComponent implements Runnable {
         numBuckets = num;
         buckets = new double[numBuckets];
         setPreferredSize(new Dimension(SIZE, SIZE));
-        running = false;
     }
 
     /**
@@ -109,34 +111,22 @@ public class ChaosWheel extends JComponent implements Runnable {
      * Start running the wheel simulation.
      */
     public final void start() {
-        if (!running) {
-            running = true;
-            (new Thread(this)).start();
-        }
-    }
-
-    /**
-     * Drive the simulation forward. This should be run as a thread.
-     */
-    public final void run() {
-        long tm = System.currentTimeMillis();
-        while (running) {
-            try {
-                tm += DELAY;
-                Thread.sleep(Math.max(0, tm - System.currentTimeMillis()));
-            } catch (InterruptedException e) {
-                break;
+        ActionListener listener = new ActionListener() {
+            public void actionPerformed(final ActionEvent evt) {
+                updateState(DELAY / 1000.0);
+                repaint();
             }
-            updateState(DELAY / 1000.0);
-            repaint();
-        }
+        };
+        System.out.println("Starting timer.");
+        timer = new Timer(DELAY, listener);
+        timer.start();
     }
 
     /**
      * Tell the wheel to stop running.
      */
     public final void stop() {
-        running = false;
+        timer.stop();
     }
 
     /**
