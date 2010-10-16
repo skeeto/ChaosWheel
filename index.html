@@ -1,20 +1,65 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Lorenz Chaotic Water Wheel</title>
+    <style type="text/css">
+      p, hr {
+        width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: justify;
+        text-indent: 3em;
+      }
+      h1 {
+        text-align: center;
+      }
+      body {
+        background: black;
+        color: DarkSalmon;
+      }
+    </style>
   </head>
-  <body bgcolor="black" text="DarkSalmon">
-    <center>
-      <h1>Lorenz Chaotic Water Wheel</h1>
-      <p>
-	<applet code="com.nullprogram.wheel.ChaosApplet"
-		archive="ChaosWheel.jar" width="300" height="300">
-	</applet>
-      </p>
-    <p>
+  <body>
+    <h1>Lorenz Chaotic Water Wheel</h1>
+    <p style="text-align: center; text-indent: 0;">
+      <applet code="com.nullprogram.wheel.ChaosApplet"
+	      archive="ChaosWheel.jar" width="300" height="300">
+      </applet>
+    </p>
+    <p style="text-align: center; text-indent: 0;">
       <b>Left-click</b> - add a bucket<br/>
       <b>Right-click</b> - remove a bucket<br/>
       <b>Middle-click</b> - toggle state space plot<br/>
     </p>
-    </center>
+    <hr/>
+    <p>
+      This is a Lorenz water wheel. Freely-swinging buckets with small
+      holes in the bottom are arranged around the outside of a loose
+      wheel. Water flows into the bucket at the top of the wheel,
+      filling it up. As it gets heavier it pulls down on the wheel,
+      spinning it.
+    </p>
+    <p>
+      This simulation is chaotic: even though the behavior of the
+      system is deterministic it is <i>highly</i> sensitive to initial
+      conditions. The animation you see above is unique: no one saw
+      this particular variation before, nor will anyone again. If you
+      refresh the page you'll be given a new wheel with unique initial
+      conditions (well, one out of the 2^128 possible starting
+      conditions, since this is running inside of a digital computer).
+    </p>
+    <p>
+      On the state space plot you should be able to see the state
+      orbiting two attractors. It's the classic butterfly image that
+      gives the phenomenon its name. The state space plot will look
+      smoother with more buckets, being perfectly smooth at an
+      infinite amount of buckets. Your mouse cannot possibly survive
+      that much clicking, so don't try it.
+    </p>
+    <hr/>
+    <p style="text-align: center; text-indent: 0;">
+      This applet requires at least JRE 6.
+    </p>
   </body>
 </html>
