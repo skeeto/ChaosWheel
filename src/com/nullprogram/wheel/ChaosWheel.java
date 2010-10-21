@@ -228,7 +228,7 @@ public class ChaosWheel extends JComponent implements MouseListener {
         /* Store the original system state */
         double thetaOrig = theta;
         double thetadotOrig = thetadot;
-        Vector<Double> bucketsOrig = (Vector<Double>) buckets.clone();
+        Vector<Double> bucketsOrig =  new Vector<Double>(buckets);
 
         /* These are variables needed for intermediate steps in RK4 */
         double dt = 0.0;
