@@ -226,20 +226,20 @@ public class ChaosWheel extends JComponent implements MouseListener {
     public final void updateState(final double tdot) {
 
         /* Store the original system state */
-        double theta_orig = theta;
-        double thetadot_orig = thetadot;
-        Vector<Double> buckets_orig = (Vector<Double>) buckets.clone();
+        double thetaOrig = theta;
+        double thetadotOrig = thetadot;
+        Vector<Double> bucketsOrig = (Vector<Double>) buckets.clone();
 
         /* These are variables needed for intermediate steps in RK4 */
         double dt = 0.0;
-        double rate_weight = 1.0;
+        double rateWeight = 1.0;
 
         /* Time derivatives of states */
-        double ddt_theta = 0.0;
-        double ddt_thetadot = 0.0;
-        Vector<Double> ddt_buckets = new Vector<Double>();
-        for (int i = 0; i < buckets.size() ; i++) {
-            ddt_buckets.add(0d);
+        double ddtTheta = 0.0;
+        double ddtThetadot = 0.0;
+        Vector<Double> ddtBuckets = new Vector<Double>();
+        for (int i = 0; i < buckets.size(); i++) {
+            ddtBuckets.add(0d);
         }
 
         /* newVal and oldVal placeholders */
@@ -247,27 +247,27 @@ public class ChaosWheel extends JComponent implements MouseListener {
         double oldVal = 0.0;
 
         /* Total derivative approximations */
-        double ddt_theta_total = 0.0;
-        double ddt_thetadot_total = 0.0;
-        Vector<Double> ddt_buckets_total = new Vector<Double>();
-        for (int i = 0; i < buckets.size() ; i++) {
-            ddt_buckets_total.add(0.0);
+        double ddtThetaTotal = 0.0;
+        double ddtThetadotTotal = 0.0;
+        Vector<Double> ddtBucketsTotal = new Vector<Double>();
+        for (int i = 0; i < buckets.size(); i++) {
+            ddtBucketsTotal.add(0.0);
         }
 
         /* RK4 Integration      */
-        for (int rk4_idx = 1; rk4_idx<=4; rk4_idx++) {
+        for (int rk4idx = 1; rk4idx <= 4; rk4idx++) {
 
-            if (rk4_idx >1) {
-                rate_weight = 2.0;
-                dt = tdot/2.0;
-            } else if (rk4_idx == 4) {
-                rate_weight = 1.0;
+            if (rk4idx > 1) {
+                rateWeight = 2.0;
+                dt = tdot / 2.0;
+            } else if (rk4idx == 4) {
+                rateWeight = 1.0;
                 dt = tdot;
             }
 
             /* System states to be used in this RK4 step */
 
-            theta = theta_orig + dt*ddt_theta;
+            theta = thetaOrig + dt * ddtTheta;
 
             while (theta < 0) {
                 theta += Math.PI * 2;
@@ -276,17 +276,17 @@ public class ChaosWheel extends JComponent implements MouseListener {
                 theta -= Math.PI * 2;
             }
 
-            thetadot = thetadot_orig + dt*ddt_thetadot;
+            thetadot = thetadotOrig + dt * ddtThetadot;
 
-            for (int i = 0; i < buckets.size() ; i++) {
-                newVal = buckets_orig.get(i)+dt*ddt_buckets.get(i);
+            for (int i = 0; i < buckets.size(); i++) {
+                newVal = bucketsOrig.get(i) + dt * ddtBuckets.get(i);
                 newVal = Math.max(0, newVal);
                 newVal = Math.min(bucketFull, newVal);
-                buckets.set(i,newVal);
+                buckets.set(i, newVal);
             }
 
             /* Differential Equation for ddt_theta  (Kinematics) */
-            ddt_theta = thetadot;
+            ddtTheta = thetadot;
 
             /* Calculate inertia */
             double inertia = wheelIntertia;
@@ -303,34 +303,34 @@ public class ChaosWheel extends JComponent implements MouseListener {
             }
 
             /* Differential Equation for ddt_thetadot (Physics) */
-            ddt_thetadot= torque / inertia;
-
+            ddtThetadot = torque / inertia;
 
             /* Differential Equation for ddt_buckets (drain rate equation) */
             for (int i = 0; i < buckets.size(); i++) {
                 newVal = buckets.get(i) * -drainRate
                          + inflow(theta + diff * i);
-                ddt_buckets.set(i, newVal);
+                ddtBuckets.set(i, newVal);
             }
 
             /* Log the derivative approximations */
-            ddt_theta_total += ddt_theta*rate_weight;
-            ddt_thetadot_total += ddt_thetadot*rate_weight;
-            for (int i = 0; i < ddt_buckets_total.size(); i++) {
-                oldVal = ddt_buckets_total.get(i);
-                newVal = ddt_buckets.get(i)*rate_weight;
-                ddt_buckets_total.set(i, oldVal+newVal);
+            ddtThetaTotal += ddtTheta * rateWeight;
+            ddtThetadotTotal += ddtThetadot * rateWeight;
+            for (int i = 0; i < ddtBucketsTotal.size(); i++) {
+                oldVal = ddtBucketsTotal.get(i);
+                newVal = ddtBuckets.get(i) * rateWeight;
+                ddtBucketsTotal.set(i, oldVal + newVal);
             }
 
         } /* End of RK4 for loop */
 
         /* Update the system state. THIS is where time actually moves forward */
-        theta = theta_orig + 1.0/6.0*ddt_theta_total*tdot;
-        thetadot = thetadot_orig + 1.0/6.0*ddt_thetadot_total*tdot;
+        theta = thetaOrig + 1.0 / 6.0 * ddtThetaTotal * tdot;
+        thetadot = thetadotOrig + 1.0 / 6.0 * ddtThetadotTotal * tdot;
 
-        for (int i = 0; i < ddt_buckets_total.size(); i++) {
-            newVal = buckets_orig.get(i) + 1.0/6.0*ddt_buckets_total.get(i)*tdot;
-            buckets.set(i,newVal);
+        for (int i = 0; i < ddtBucketsTotal.size(); i++) {
+            newVal = bucketsOrig.get(i)
+                + 1.0 / 6.0 * ddtBucketsTotal.get(i) * tdot;
+            buckets.set(i, newVal);
         }
 
         logState();
