@@ -250,9 +250,8 @@ public class ChaosWheel extends JComponent implements MouseListener {
             ddtBucketsTotal.add(0.0);
         }
 
-        /* RK4 Integration      */
+        /* RK4 Integration */
         for (int rk4idx = 1; rk4idx <= 4; rk4idx++) {
-
             if (rk4idx > 1) {
                 rateWeight = 2.0;
                 dt = tdot / 2.0;
@@ -277,7 +276,7 @@ public class ChaosWheel extends JComponent implements MouseListener {
                 buckets.set(i, Math.min(bucketFull, Math.max(0, val)));
             }
 
-            /* Differential Equation for ddt_theta  (Kinematics) */
+            /* Differential equation for ddtTheta (kinematics) */
             ddtTheta = thetadot;
 
             /* Calculate inertia */
@@ -294,10 +293,10 @@ public class ChaosWheel extends JComponent implements MouseListener {
                           * Math.sin(theta + diff * i);
             }
 
-            /* Differential Equation for ddt_thetadot (Physics) */
+            /* Differential equation for ddtThetadot (physics) */
             ddtThetadot = torque / inertia;
 
-            /* Differential Equation for ddt_buckets (drain rate equation) */
+            /* Differential equation for ddtBuckets (drain rate equation) */
             for (int i = 0; i < buckets.size(); i++) {
                 ddtBuckets.set(i, buckets.get(i) * -drainRate
                                + inflow(theta + diff * i));
@@ -313,10 +312,10 @@ public class ChaosWheel extends JComponent implements MouseListener {
 
         } /* End of RK4 for loop */
 
-        /* Update the system state. THIS is where time actually moves forward */
+        /* Update the system state.
+         * THIS is where time actually moves forward. */
         theta = thetaOrig + 1.0 / 6.0 * ddtThetaTotal * tdot;
         thetadot = thetadotOrig + 1.0 / 6.0 * ddtThetadotTotal * tdot;
-
         for (int i = 0; i < ddtBucketsTotal.size(); i++) {
             double val = buckets.get(i)
                 + 1d / 6d * ddtBucketsTotal.get(i) * tdot;
