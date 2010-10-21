@@ -242,10 +242,6 @@ public class ChaosWheel extends JComponent implements MouseListener {
             ddtBuckets.add(0d);
         }
 
-        /* newVal and oldVal placeholders */
-        double newVal = 0.0;
-        double oldVal = 0.0;
-
         /* Total derivative approximations */
         double ddtThetaTotal = 0.0;
         double ddtThetadotTotal = 0.0;
@@ -279,10 +275,8 @@ public class ChaosWheel extends JComponent implements MouseListener {
             thetadot = thetadotOrig + dt * ddtThetadot;
 
             for (int i = 0; i < buckets.size(); i++) {
-                newVal = bucketsOrig.get(i) + dt * ddtBuckets.get(i);
-                newVal = Math.max(0, newVal);
-                newVal = Math.min(bucketFull, newVal);
-                buckets.set(i, newVal);
+                double val = bucketsOrig.get(i) + dt * ddtBuckets.get(i);
+                buckets.set(i, Math.min(bucketFull, Math.max(0, val)));
             }
 
             /* Differential Equation for ddt_theta  (Kinematics) */
@@ -307,18 +301,16 @@ public class ChaosWheel extends JComponent implements MouseListener {
 
             /* Differential Equation for ddt_buckets (drain rate equation) */
             for (int i = 0; i < buckets.size(); i++) {
-                newVal = buckets.get(i) * -drainRate
-                         + inflow(theta + diff * i);
-                ddtBuckets.set(i, newVal);
+                ddtBuckets.set(i, buckets.get(i) * -drainRate
+                               + inflow(theta + diff * i));
             }
 
             /* Log the derivative approximations */
             ddtThetaTotal += ddtTheta * rateWeight;
             ddtThetadotTotal += ddtThetadot * rateWeight;
             for (int i = 0; i < ddtBucketsTotal.size(); i++) {
-                oldVal = ddtBucketsTotal.get(i);
-                newVal = ddtBuckets.get(i) * rateWeight;
-                ddtBucketsTotal.set(i, oldVal + newVal);
+                ddtBucketsTotal.set(i, ddtBucketsTotal.get(i)
+                                    + ddtBuckets.get(i) * rateWeight);
             }
 
         } /* End of RK4 for loop */
@@ -328,9 +320,8 @@ public class ChaosWheel extends JComponent implements MouseListener {
         thetadot = thetadotOrig + 1.0 / 6.0 * ddtThetadotTotal * tdot;
 
         for (int i = 0; i < ddtBucketsTotal.size(); i++) {
-            newVal = bucketsOrig.get(i)
-                + 1.0 / 6.0 * ddtBucketsTotal.get(i) * tdot;
-            buckets.set(i, newVal);
+            buckets.set(i, bucketsOrig.get(i)
+                        + 1.0 / 6.0 * ddtBucketsTotal.get(i) * tdot);
         }
 
         logState();
