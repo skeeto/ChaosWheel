@@ -55,9 +55,9 @@ public class ChaosWheel extends JComponent implements MouseListener {
 
     /* Simulation parameters. */
     private double radius = 1;          // feet
-    private double wheelIntertia = .1;  // slug * ft ^ 2
+    private double wheelIntertia = 0.1; // slug * ft ^ 2
     private double damping = 2.5;       // ft * lbs / radians / sec
-    private double gravity = 10.7;      // ft / sec ^ 2
+    private double gravity = 32.2;      // ft / sec ^ 2
     private double bucketFull = 1.0;    // slug
     private double drainRate = 0.3;     // slug / sec / slug
     private double fillRate = 0.33;     // slug / sec
@@ -104,7 +104,7 @@ public class ChaosWheel extends JComponent implements MouseListener {
         addMouseListener(this);
         ActionListener listener = new ActionListener() {
             public void actionPerformed(final ActionEvent evt) {
-                updateState(DELAY / 1000.0);
+                updateState(DELAY / 1500.0);
                 repaint();
             }
         };
