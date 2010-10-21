@@ -318,8 +318,9 @@ public class ChaosWheel extends JComponent implements MouseListener {
         thetadot = thetadotOrig + 1.0 / 6.0 * ddtThetadotTotal * tdot;
 
         for (int i = 0; i < ddtBucketsTotal.size(); i++) {
-            buckets.set(i, bucketsOrig.get(i)
-                        + 1.0 / 6.0 * ddtBucketsTotal.get(i) * tdot);
+            double val = buckets.get(i)
+                + 1d / 6d * ddtBucketsTotal.get(i) * tdot;
+            buckets.set(i, Math.min(bucketFull, Math.max(0, val)));
         }
 
         logState();
