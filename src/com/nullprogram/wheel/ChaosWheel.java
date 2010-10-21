@@ -264,14 +264,12 @@ public class ChaosWheel extends JComponent implements MouseListener {
             /* System states to be used in this RK4 step */
 
             theta = thetaOrig + dt * ddtTheta;
-
             while (theta < 0) {
                 theta += Math.PI * 2;
             }
             while (theta > Math.PI * 2) {
                 theta -= Math.PI * 2;
             }
-
             thetadot = thetadotOrig + dt * ddtThetadot;
 
             for (int i = 0; i < buckets.size(); i++) {
