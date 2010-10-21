@@ -224,38 +224,113 @@ public class ChaosWheel extends JComponent implements MouseListener {
      * @param tdot number of seconds to update by.
      */
     public final void updateState(final double tdot) {
-        theta += thetadot * tdot;
-        while (theta < 0) {
-            theta += Math.PI * 2;
-        }
-        while (theta > Math.PI * 2) {
-            theta -= Math.PI * 2;
+
+        /* Store the original system state */
+        double theta_orig = theta;
+        double thetadot_orig = thetadot;
+        Vector<Double> buckets_orig = (Vector<Double>) buckets.clone();
+
+        /* These are variables needed for intermediate steps in RK4 */
+        double dt = 0.0;
+        double rate_weight = 1.0;
+
+        /* Time derivatives of states */
+        double ddt_theta = 0.0;
+        double ddt_thetadot = 0.0;
+        Vector<Double> ddt_buckets = new Vector<Double>();
+        for (int i = 0; i < buckets.size() ; i++) {
+            ddt_buckets.add(0d);
         }
 
-        /* Calculate inertia */
-        double inertia = wheelIntertia;
-        for (int i = 0; i < buckets.size(); i++) {
-            inertia += buckets.get(i) * radius * radius;
+        /* newVal and oldVal placeholders */
+        double newVal = 0.0;
+        double oldVal = 0.0;
+
+        /* Total derivative approximations */
+        double ddt_theta_total = 0.0;
+        double ddt_thetadot_total = 0.0;
+        Vector<Double> ddt_buckets_total = new Vector<Double>();
+        for (int i = 0; i < buckets.size() ; i++) {
+            ddt_buckets_total.add(0.0);
         }
 
-        /* Calculate torque */
-        double torque = -1 * (damping * thetadot);
-        double diff = Math.PI * 2d / buckets.size();
-        for (int i = 0; i < buckets.size(); i++) {
-            torque += buckets.get(i) * radius * gravity
-                      * Math.sin(theta + diff * i);
-        }
-        thetadot += torque / inertia * tdot;
+        /* RK4 Integration      */
+        for (int rk4_idx = 1; rk4_idx<=4; rk4_idx++) {
 
-        /* Update buckets */
-        for (int i = 0; i < buckets.size(); i++) {
-            double oldVal = buckets.get(i);
-            double newVal = oldVal;
-            newVal += buckets.get(i) * -drainRate * tdot
-                      + tdot * inflow(theta + diff * i);
-            newVal = Math.max(0, newVal);
-            newVal = Math.min(bucketFull, newVal);
-            buckets.set(i, newVal);
+            if (rk4_idx >1) {
+                rate_weight = 2.0;
+                dt = tdot/2.0;
+            } else if (rk4_idx == 4) {
+                rate_weight = 1.0;
+                dt = tdot;
+            }
+
+            /* System states to be used in this RK4 step */
+
+            theta = theta_orig + dt*ddt_theta;
+
+            while (theta < 0) {
+                theta += Math.PI * 2;
+            }
+            while (theta > Math.PI * 2) {
+                theta -= Math.PI * 2;
+            }
+
+            thetadot = thetadot_orig + dt*ddt_thetadot;
+
+            for (int i = 0; i < buckets.size() ; i++) {
+                newVal = buckets_orig.get(i)+dt*ddt_buckets.get(i);
+                newVal = Math.max(0, newVal);
+                newVal = Math.min(bucketFull, newVal);
+                buckets.set(i,newVal);
+            }
+
+            /* Differential Equation for ddt_theta  (Kinematics) */
+            ddt_theta = thetadot;
+
+            /* Calculate inertia */
+            double inertia = wheelIntertia;
+            for (int i = 0; i < buckets.size(); i++) {
+                inertia += buckets.get(i) * radius * radius;
+            }
+
+            /* Calculate torque */
+            double torque = -1 * (damping * thetadot);
+            double diff = Math.PI * 2d / buckets.size();
+            for (int i = 0; i < buckets.size(); i++) {
+                torque += buckets.get(i) * radius * gravity
+                          * Math.sin(theta + diff * i);
+            }
+
+            /* Differential Equation for ddt_thetadot (Physics) */
+            ddt_thetadot= torque / inertia;
+
+
+            /* Differential Equation for ddt_buckets (drain rate equation) */
+            for (int i = 0; i < buckets.size(); i++) {
+                newVal = buckets.get(i) * -drainRate
+                         + inflow(theta + diff * i);
+                ddt_buckets.set(i, newVal);
+            }
+
+            /* Log the derivative approximations */
+            ddt_theta_total += ddt_theta*rate_weight;
+            ddt_thetadot_total += ddt_thetadot*rate_weight;
+            for (int i = 0; i < ddt_buckets_total.size(); i++) {
+                oldVal = ddt_buckets_total.get(i);
+                newVal = ddt_buckets.get(i)*rate_weight;
+                ddt_buckets_total.set(i, oldVal+newVal);
+            }
+
+        } /* End of RK4 for loop */
+
+        /* Update the system state. THIS is where time actually moves forward */
+        theta = theta_orig + 1.0/6.0*ddt_theta_total*tdot;
+        thetadot = thetadot_orig + 1.0/6.0*ddt_thetadot_total*tdot;
+
+        for (int i = 0; i < ddt_buckets_total.size(); i++) {
+            newVal = buckets_orig.get(i) + 1.0/6.0*ddt_buckets_total.get(i)*tdot;
+            buckets.set(i,newVal);
         }
 
         logState();
