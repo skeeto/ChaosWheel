@@ -252,7 +252,7 @@ public class ChaosWheel extends JComponent implements MouseListener {
 
         /* RK4 Integration */
         for (int rk4idx = 1; rk4idx <= 4; rk4idx++) {
-            if (rk4idx > 1) {
+            if ((rk4idx > 1) && (rk4idx < 4)) {
                 rateWeight = 2.0;
                 dt = tdot / 2.0;
             } else if (rk4idx == 4) {
