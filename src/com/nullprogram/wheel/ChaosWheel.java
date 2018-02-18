@@ -48,9 +48,9 @@ public class ChaosWheel extends JComponent implements MouseListener {
     private static final long serialVersionUID = 4764158473501226728L;
 
     /* Simulation constants. */
-    private static final int SIZE = 300; // display size in pixels
+    private static final int SIZE = 800; // display size in pixels
     private static final int DELAY = 30; // milliseconds
-    private static final int DEFAULT_BUCKETS = 9;
+    private static final int DEFAULT_BUCKETS = 17;
     private static final int MIN_BUCKETS = 5;
 
     /* Simulation parameters. */
@@ -58,7 +58,7 @@ public class ChaosWheel extends JComponent implements MouseListener {
     private double wheelIntertia = 0.1; // slug * ft ^ 2
     private double damping = 2.5;       // ft * lbs / radians / sec
     private double gravity = 32.2;      // ft / sec ^ 2
-    private double bucketFull = 1.0;    // slug
+    private double bucketFull = 0.4;    // slug
     private double drainRate = 0.3;     // slug / sec / slug
     private double fillRate = 0.33;     // slug / sec
 
@@ -104,7 +104,7 @@ public class ChaosWheel extends JComponent implements MouseListener {
         addMouseListener(this);
         ActionListener listener = new ActionListener() {
             public void actionPerformed(final ActionEvent evt) {
-                updateState(DELAY / 1500.0);
+                updateState(DELAY / 3000.0);
                 repaint();
             }
         };
