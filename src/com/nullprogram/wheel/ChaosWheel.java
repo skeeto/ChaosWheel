@@ -120,6 +120,7 @@ public class ChaosWheel extends JComponent implements MouseListener {
     public static void main(final String[] args) {
         /* Fix for poor OpenJDK performance. */
         System.setProperty("sun.java2d.pmoffscreen", "false");
+        System.setProperty("sun.java2d.opengl", "true");
 
         JFrame frame = new JFrame("Lorenz Water Wheel");
         ChaosWheel wheel = null;
